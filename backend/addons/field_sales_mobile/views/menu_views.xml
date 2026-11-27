@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_field_sales_root"
+              name="Fuerza de Ventas"
+              action="action_field_sales_dashboard"
+              sequence="10"
+              web_icon="field_sales_mobile,static/description/icon.png"/>
+
+    <menuitem id="menu_field_sales_employees"
+              name="Vendedores"
+              parent="menu_field_sales_root"
+              action="action_field_sales_employees"
+              sequence="10"/>
+
+    <menuitem id="menu_field_sales_seller_wizard"
+              name="Registrar Vendedor"
+              parent="menu_field_sales_root"
+              action="action_field_sales_seller_wizard"
+              sequence="15"/>
+
+    <menuitem id="menu_field_sales_customers"
+              name="Clientes"
+              parent="menu_field_sales_root"
+              action="action_field_sales_customer"
+              sequence="20"/>
+
+    <menuitem id="menu_field_sales_visits"
+              name="Visitas"
+              parent="menu_field_sales_root"
+              action="action_field_sales_visit"
+              sequence="30"/>
+
+    <menuitem id="menu_field_sales_routes"
+              name="Planificación de Rutas"
+              parent="menu_field_sales_root"
+              action="action_field_sales_route_stop"
+              sequence="32"/>
+
+    <menuitem id="menu_field_sales_attendance"
+              name="Asistencias"
+              parent="menu_field_sales_root"
+              action="action_field_sales_attendance"
+              sequence="35"/>
+
+    <menuitem id="menu_field_sales_orders"
+              name="Pedidos"
+              parent="menu_field_sales_root"
+              action="action_field_sales_order"
+              sequence="37"/>
+
+    <menuitem id="menu_field_sales_live_map"
+              name="Ubicación en Vivo"
+              parent="menu_field_sales_root"
+              action="action_field_sales_live_map"
+              sequence="38"/>
+
+    <menuitem id="menu_field_sales_reports"
+              name="Reportes"
+              parent="menu_field_sales_root"
+              sequence="40"/>
+
+    <menuitem id="menu_field_sales_report_visits"
+              name="Cobertura de Visitas"
+              parent="menu_field_sales_reports"
+              action="action_field_sales_visit_report"
+              sequence="10"/>
+
+    <menuitem id="menu_field_sales_report_visit_frequency"
+              name="Frecuencia por Cliente"
+              parent="menu_field_sales_reports"
+              action="action_field_sales_visit_frequency_report"
+              sequence="20"/>
+
+    <menuitem id="menu_field_sales_report_orders"
+              name="Pedidos por Vendedor"
+              parent="menu_field_sales_reports"
+              action="action_field_sales_order_report"
+              sequence="30"/>
+
+    <menuitem id="menu_field_sales_report_unvisited"
+              name="Clientes sin Visitar"
+              parent="menu_field_sales_reports"
+              action="action_field_sales_customer_unvisited"
+              sequence="40"/>
+
+    <menuitem id="menu_field_sales_config"
+              name="Configuración"
+              parent="menu_field_sales_root"
+              sequence="90"
+              groups="field_sales_mobile.group_field_sales_manager"/>
+
+    <menuitem id="menu_field_sales_activation"
+              name="Activación App Móvil"
+              parent="menu_field_sales_config"
+              action="action_field_sales_activation"
+              sequence="10"/>
+
+    <menuitem id="menu_field_sales_attendance_config"
+              name="Configuración de Asistencia"
+              parent="menu_field_sales_config"
+              action="action_field_sales_attendance_config"
+              sequence="20"/>
+
+    <menuitem id="menu_field_sales_catalog_config"
+              name="Configuración de Catálogo"
+              parent="menu_field_sales_config"
+              action="action_field_sales_catalog_config"
+              sequence="30"/>
+
+    <menuitem id="menu_field_sales_checklist_config"
+              name="Checklist Agronómico"
+              parent="menu_field_sales_config"
+              action="action_field_sales_checklist_item"
+              sequence="40"/>
+
+    <menuitem id="menu_field_sales_signature_config"
+              name="Configuración de Firma Digital"
+              parent="menu_field_sales_config"
+              action="action_field_sales_signature_config"
+              sequence="50"/>
+
+    <menuitem id="menu_field_sales_route_config"
+              name="Configuración de Rutas"
+              parent="menu_field_sales_config"
+              action="action_field_sales_route_config"
+              sequence="60"/>
+
+    <menuitem id="menu_field_sales_branding_config"
+              name="Marca (White-Label)"
+              parent="menu_field_sales_config"
+              action="action_field_sales_branding_config"
+              sequence="70"/>
+
+    <menuitem id="menu_field_sales_location_config"
+              name="Configuración de Ubicación en Vivo"
+              parent="menu_field_sales_config"
+              action="action_field_sales_location_config"
+              sequence="80"/>
+
+</odoo>

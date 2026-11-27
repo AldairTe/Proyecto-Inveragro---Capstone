@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Agrega campos de vendedor móvil al formulario estándar de empleado -->
+    <record id="view_hr_employee_form_inherit_field_sales" model="ir.ui.view">
+        <field name="name">hr.employee.form.field.sales.mobile</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object" name="action_view_customers"
+                        icon="fa-map-marker" attrs="{'invisible': [('is_mobile_seller', '=', False)]}">
+                    <field name="customer_count" widget="statinfo" string="Clientes"/>
+                </button>
+                <button class="oe_stat_button" type="object" name="action_view_visits"
+                        icon="fa-list" attrs="{'invisible': [('is_mobile_seller', '=', False)]}">
+                    <field name="visit_count" widget="statinfo" string="Visitas"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <group string="Fuerza de Ventas Móvil">
+                    <field name="is_mobile_seller"/>
+                    <group attrs="{'invisible': [('is_mobile_seller', '=', False)]}" colspan="2">
+                        <field name="seller_code"/>
+                        <field name="sales_zone"/>
+                        <field name="mobile_login"/>
+                        <field name="mobile_password" password="True"
+                               placeholder="Dejar en blanco para no cambiarla"/>
+                        <field name="mobile_account_active"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Lista de vendedores (empleados marcados como vendedor móvil) -->
+    <record id="view_field_sales_employee_tree" model="ir.ui.view">
+        <field name="name">hr.employee.tree.field.sales.mobile</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <tree string="Vendedores" create="0">
+                <field name="name"/>
+                <field name="seller_code"/>
+                <field name="sales_zone"/>
+                <field name="mobile_login"/>
+                <field name="mobile_account_active" widget="boolean_toggle"/>
+                <field name="customer_count"/>
+                <field name="visit_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_field_sales_employees" model="ir.actions.act_window">
+        <field name="name">Vendedores</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_mobile_seller', '=', True)]</field>
+        <field name="view_id" ref="view_field_sales_employee_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no tienes vendedores móviles.
+            </p>
+            <p>
+                Usa el menú <b>"Registrar Vendedor"</b> para convertir a un empleado
+                existente en vendedor de campo.
+            </p>
+        </field>
+    </record>
+
+    <!-- Wizard: registrar vendedor a partir de un empleado existente -->
+    <record id="view_field_sales_seller_wizard_form" model="ir.ui.view">
+        <field name="name">field.sales.seller.wizard.form</field>
+        <field name="model">field.sales.seller.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Registrar vendedor móvil">
+                <group>
+                    <field name="employee_id"/>
+                    <field name="seller_code"/>
+                    <field name="sales_zone"/>
+                    <field name="mobile_login"/>
+                    <field name="mobile_password" password="True"/>
+                </group>
+                <footer>
+                    <button string="Registrar" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_field_sales_seller_wizard" model="ir.actions.act_window">
+        <field name="name">Registrar Vendedor</field>
+        <field name="res_model">field.sales.seller.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

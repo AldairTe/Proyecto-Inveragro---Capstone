@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_field_sales_customer_tree" model="ir.ui.view">
+        <field name="name">field.sales.customer.tree</field>
+        <field name="model">field.sales.customer</field>
+        <field name="arch" type="xml">
+            <tree string="Clientes" decoration-danger="not last_visit_date">
+                <field name="name"/>
+                <field name="contact_name"/>
+                <field name="phone"/>
+                <field name="employee_id"/>
+                <field name="visit_count"/>
+                <field name="last_visit_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_field_sales_customer_form" model="ir.ui.view">
+        <field name="name">field.sales.customer.form</field>
+        <field name="model">field.sales.customer</field>
+        <field name="arch" type="xml">
+            <form string="Cliente">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="action"
+                                name="%(action_field_sales_visit)d" icon="fa-list">
+                            <field name="visit_count" widget="statinfo" string="Visitas"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="contact_name"/>
+                            <field name="phone"/>
+                            <field name="employee_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group string="Ubicación">
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Visitas">
+                            <field name="visit_ids" readonly="1">
+                                <tree>
+                                    <field name="date_visit"/>
+                                    <field name="employee_id"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_field_sales_customer_search" model="ir.ui.view">
+        <field name="name">field.sales.customer.search</field>
+        <field name="model">field.sales.customer</field>
+        <field name="arch" type="xml">
+            <search string="Buscar clientes">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <filter string="Sin asignar" name="unassigned" domain="[('employee_id', '=', False)]"/>
+                <separator/>
+                <filter string="Nunca visitado" name="never_visited" domain="[('last_visit_date', '=', False)]"/>
+                <filter string="Sin visitar en 15 días" name="unvisited_15"
+                        domain="['|', ('last_visit_date', '=', False),
+                                 ('last_visit_date', '&lt;', (context_today() - relativedelta(days=15)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter string="Sin visitar en 30 días" name="unvisited_30"
+                        domain="['|', ('last_visit_date', '=', False),
+                                 ('last_visit_date', '&lt;', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Vendedor" name="group_seller" context="{'group_by': 'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_field_sales_customer" model="ir.actions.act_window">
+        <field name="name">Clientes</field>
+        <field name="res_model">field.sales.customer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_field_sales_customer_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no registras clientes.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_field_sales_customer_unvisited" model="ir.actions.act_window">
+        <field name="name">Clientes sin Visitar</field>
+        <field name="res_model">field.sales.customer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_field_sales_customer_search"/>
+        <field name="context">{'search_default_unvisited_15': 1}</field>
+    </record>
+
+</odoo>

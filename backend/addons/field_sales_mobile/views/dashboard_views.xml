@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_field_sales_dashboard_form" model="ir.ui.view">
+        <field name="name">field.sales.dashboard.form</field>
+        <field name="model">field.sales.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Fuerza de Ventas" create="false" edit="false" delete="false">
+                <div style="text-align:center; padding: 10px 0 20px 0;">
+                    <h1>🚜 Fuerza de Ventas</h1>
+                    <p class="text-muted">Gestión comercial móvil</p>
+                </div>
+
+                <div class="oe_button_box" name="button_box" style="justify-content:center;">
+                    <button class="oe_stat_button" type="object" name="action_open_sellers" icon="fa-user">
+                        <field name="total_sellers" widget="statinfo" string="Vendedores activos"/>
+                    </button>
+                    <button class="oe_stat_button" type="object" name="action_open_customers" icon="fa-map-marker">
+                        <field name="total_customers" widget="statinfo" string="Clientes asignados"/>
+                    </button>
+                    <button class="oe_stat_button" type="object" name="action_open_visits" icon="fa-check-circle">
+                        <field name="visits_today" widget="statinfo" string="Visitas hoy"/>
+                    </button>
+                    <button class="oe_stat_button" type="object" name="action_open_visits" icon="fa-clock-o">
+                        <field name="pending_visits" widget="statinfo" string="Visitas pendientes"/>
+                    </button>
+                    <button class="oe_stat_button" type="object" name="action_open_visits" icon="fa-camera">
+                        <field name="media_count" widget="statinfo" string="Evidencias cargadas"/>
+                    </button>
+                </div>
+
+                <div class="row" style="margin-top:32px;">
+                    <div class="col-3 text-center">
+                        <button type="object" name="action_open_sellers"
+                                class="btn btn-primary btn-lg btn-block" style="height:90px;">
+                            👨‍💼<br/>Vendedores
+                        </button>
+                    </div>
+                    <div class="col-3 text-center">
+                        <button type="object" name="action_open_customers"
+                                class="btn btn-primary btn-lg btn-block" style="height:90px;">
+                            📍<br/>Clientes
+                        </button>
+                    </div>
+                    <div class="col-3 text-center">
+                        <button type="object" name="action_open_visits"
+                                class="btn btn-primary btn-lg btn-block" style="height:90px;">
+                            🧾<br/>Visitas
+                        </button>
+                    </div>
+                    <div class="col-3 text-center">
+                        <button type="object" name="action_open_reports"
+                                class="btn btn-primary btn-lg btn-block" style="height:90px;">
+                            📊<br/>Reportes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_field_sales_dashboard" model="ir.actions.act_window">
+        <field name="name">Fuerza de Ventas</field>
+        <field name="res_model">field.sales.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_field_sales_dashboard_form"/>
+        <field name="target">inline</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,51 @@
+# ==============================================================================
+# Proyecto Inveragro - Capstone (.gitignore)
+# ==============================================================================
+
+# --- Android & Gradle ---
+.gradle/
+build/
+*/build/
+app/build/
+mobile-app/build/
+mobile-app/app/build/
+mobile-app/app/release/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+baselineProfiles/
+
+# --- IDEs & Editores ---
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Python & Odoo ---
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+*.log
+*.sqlite3
+*.db
+backend/odoo.log
+backend/config/*.log
+backend/postgres-data/
+
+# --- Seguridad & Credenciales Locales ---
+*.jks
+*.keystore
+*.p12
+*.key
+*.pem
+.env
+!.env.example

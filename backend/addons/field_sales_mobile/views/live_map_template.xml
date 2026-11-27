@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="live_map_template" name="Ubicación en Vivo">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+                <title>Ubicación en Vivo - Fuerza de Ventas</title>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+                <style>
+                    html, body { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; }
+                    #layout { display: flex; height: 100vh; }
+                    #sidebar { width: 320px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; padding: 12px; box-sizing: border-box; }
+                    #map { flex: 1; position: relative; }
+                    h2 { font-size: 15px; margin: 14px 0 8px 0; }
+                    h2:first-child { margin-top: 4px; }
+                    .empleado-item { padding: 10px; border-radius: 8px; margin-bottom: 8px; background: #F5F6F8; cursor: pointer; border-left: 4px solid #9E9E9E; }
+                    .empleado-item.status-online { border-left-color: #4CAF50; }
+                    .empleado-item.status-alerta { border-left-color: #FFC107; }
+                    .empleado-item.status-offline { border-left-color: #D32F2F; }
+                    .empleado-item:hover { background: #E8F5E9; }
+                    .empleado-nombre { font-weight: bold; font-size: 14px; }
+                    .empleado-hora { font-size: 12px; color: #757575; }
+                    .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-top: 4px; margin-right: 4px; }
+                    .badge-offline { background: #FFEBEE; color: #D32F2F; }
+                    .badge-alerta { background: #FFF8E1; color: #F57F17; }
+                    .badge-bateria { background: #FFF3E0; color: #E65100; }
+                    .sin-datos { color: #9E9E9E; font-size: 13px; padding: 8px; }
+                    #controlesRuta select, #controlesRuta input, #controlesRuta button { width: 100%; margin-bottom: 8px; padding: 6px; box-sizing: border-box; }
+                    #btnActualizar, #btnHeatmap { background: #252525; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; width: 100%; margin-bottom: 8px; }
+                    .fila-botones { display: flex; gap: 6px; }
+                    .fila-botones button { flex: 1; background: #EEE; border: none; border-radius: 6px; padding: 6px; cursor: pointer; font-size: 12px; }
+                    .resumen-dia { background: #F0FDF4; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 12px; }
+                    .resumen-dia div { margin-bottom: 4px; }
+                    .evento-item { font-size: 12px; padding: 6px; border-bottom: 1px solid #f0f0f0; }
+                    #playbackBar { position: absolute; bottom: 20px; left: 20px; right: 20px; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: none; }
+                    #playbackBar input[type=range] { width: 100%; }
+                    #playbackControls { display: flex; gap: 8px; align-items: center; }
+                    #playbackControls button { padding: 6px 12px; }
+                </style>
+            </head>
+            <body>
+                <div id="layout">
+                    <div id="sidebar">
+                        <h2>Vendedores</h2>
+                        <button id="btnActualizar">Actualizar ahora</button>
+                        <div id="listaEmpleados"><div class="sin-datos">Cargando...</div></div>
+
+                        <h2>Eventos recientes (llegadas a clientes)</h2>
+                        <div id="listaEventos"><div class="sin-datos">Cargando...</div></div>
+
+                        <h2>Ver ruta del día</h2>
+                        <div id="controlesRuta">
+                            <select id="selectEmpleadoRuta"></select>
+                            <input type="date" id="fechaRuta"/>
+                            <button id="btnVerRuta">Ver ruta</button>
+                            <div class="fila-botones">
+                                <button id="btnPlanVsReal">Plan vs. real</button>
+                                <button id="btnReproducir">Reproducir</button>
+                            </div>
+                            <div class="fila-botones" style="margin-top:6px;">
+                                <button id="btnExportarCsv">Exportar CSV</button>
+                                <button id="btnExportarKml">Exportar KML</button>
+                            </div>
+                            <div id="resumenDia"></div>
+                        </div>
+
+                        <h2>Mapa de calor</h2>
+                        <button id="btnHeatmap">Ver últimos 30 días</button>
+                    </div>
+                    <div id="map">
+                        <div id="playbackBar">
+                            <div id="playbackControls">
+                                <button id="btnPlayPause">▶</button>
+                                <input type="range" id="playbackSlider" min="0" max="0" value="0"/>
+                                <span id="playbackHora" style="font-size:12px; white-space:nowrap;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script><![CDATA[
+                    var map = L.map('map').setView([-9.19, -75.02], 6); // Perú, zoom general
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    var marcadores = {};
+                    var rutaLayer = null;
+                    var planLayer = null;
+                    var heatLayer = null;
+                    var playbackMarker = null;
+                    var playbackPuntos = [];
+                    var playbackTimer = null;
+                    var playbackIndex = 0;
+
+                    function jsonRpc(url, params) {
+                        return fetch(url, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            credentials: 'same-origin',
+                            body: JSON.stringify({jsonrpc: '2.0', method: 'call', params: params || {}})
+                        }).then(function(r) { return r.json(); }).then(function(r) { return r.result; });
+                    }
+
+                    function formatearHora(fechaStr) {
+                        if (!fechaStr) return '';
+                        var d = new Date(fechaStr.replace(' ', 'T') + 'Z');
+                        return d.toLocaleString();
+                    }
+
+                    function crearItemEmpleado(pos) {
+                        var item = document.createElement('div');
+                        item.className = 'empleado-item status-' + pos.status;
+
+                        var nombre = document.createElement('div');
+                        nombre.className = 'empleado-nombre';
+                        nombre.textContent = pos.employee_name;
+
+                        var hora = document.createElement('div');
+                        hora.className = 'empleado-hora';
+                        hora.textContent = 'Última vez: ' + formatearHora(pos.captured_at);
+
+                        item.appendChild(nombre);
+                        item.appendChild(hora);
+
+                        if (pos.status === 'offline') {
+                            var b1 = document.createElement('span');
+                            b1.className = 'badge badge-offline';
+                            b1.textContent = 'Sin señal';
+                            item.appendChild(b1);
+                        } else if (pos.status === 'alerta') {
+                            var b2 = document.createElement('span');
+                            b2.className = 'badge badge-alerta';
+                            b2.textContent = 'Sin actualizar hace rato';
+                            item.appendChild(b2);
+                        }
+
+                        if (pos.low_battery) {
+                            var b3 = document.createElement('span');
+                            b3.className = 'badge badge-bateria';
+                            b3.textContent = 'Batería: ' + pos.battery_level + '%';
+                            item.appendChild(b3);
+                        } else if (pos.battery_level !== false && pos.battery_level !== null && pos.battery_level !== undefined) {
+                            var b4 = document.createElement('span');
+                            b4.className = 'badge';
+                            b4.style.background = '#E8F5E9';
+                            b4.style.color = '#2E7D32';
+                            b4.textContent = 'Batería: ' + pos.battery_level + '%';
+                            item.appendChild(b4);
+                        }
+
+                        item.onclick = function() { map.setView([pos.latitude, pos.longitude], 15); };
+                        return item;
+                    }
+
+                    function colorPorEstado(status) {
+                        if (status === 'offline') return '#D32F2F';
+                        if (status === 'alerta') return '#FFC107';
+                        return '#4CAF50';
+                    }
+
+                    function cargarPosiciones() {
+                        jsonRpc('/field_sales/backend/location/latest', {}).then(function(resultado) {
+                            if (!resultado || resultado.error) return;
+                            var lista = document.getElementById('listaEmpleados');
+                            lista.textContent = '';
+
+                            if (!resultado.positions.length) {
+                                var vacio = document.createElement('div');
+                                vacio.className = 'sin-datos';
+                                vacio.textContent = 'Aún no hay ubicaciones registradas.';
+                                lista.appendChild(vacio);
+                                return;
+                            }
+
+                            resultado.positions.forEach(function(pos) {
+                                lista.appendChild(crearItemEmpleado(pos));
+
+                                var latlng = [pos.latitude, pos.longitude];
+                                var color = colorPorEstado(pos.status);
+                                var popupTexto = pos.employee_name + ' - ' + formatearHora(pos.captured_at) +
+                                        (pos.battery_level !== false && pos.battery_level !== null ? (' - Batería: ' + pos.battery_level + '%') : '');
+
+                                if (marcadores[pos.employee_id]) {
+                                    marcadores[pos.employee_id].setLatLng(latlng);
+                                    marcadores[pos.employee_id].setPopupContent(popupTexto);
+                                    marcadores[pos.employee_id].setStyle({fillColor: color, color: color});
+                                } else {
+                                    marcadores[pos.employee_id] = L.circleMarker(latlng, {
+                                        radius: 9, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1
+                                    }).addTo(map).bindPopup(popupTexto);
+                                }
+                            });
+                        });
+                    }
+
+                    function cargarEventos() {
+                        jsonRpc('/field_sales/backend/location/events', {}).then(function(resultado) {
+                            if (!resultado || resultado.error) return;
+                            var lista = document.getElementById('listaEventos');
+                            lista.textContent = '';
+
+                            if (!resultado.events.length) {
+                                var vacio = document.createElement('div');
+                                vacio.className = 'sin-datos';
+                                vacio.textContent = 'Sin eventos recientes.';
+                                lista.appendChild(vacio);
+                                return;
+                            }
+
+                            resultado.events.forEach(function(ev) {
+                                var item = document.createElement('div');
+                                item.className = 'evento-item';
+                                item.textContent = ev.employee_name + ' llegó a ' + ev.customer_name + ' (' + formatearHora(ev.entered_at) + ')';
+                                lista.appendChild(item);
+                            });
+                        });
+                    }
+
+                    function cargarSelectEmpleados() {
+                        jsonRpc('/field_sales/backend/location/employees', {}).then(function(resultado) {
+                            if (!resultado || resultado.error) return;
+                            var select = document.getElementById('selectEmpleadoRuta');
+                            resultado.employees.forEach(function(emp) {
+                                var opt = document.createElement('option');
+                                opt.value = emp.id;
+                                opt.textContent = emp.name;
+                                select.appendChild(opt);
+                            });
+                        });
+                    }
+
+                    document.getElementById('fechaRuta').valueAsDate = new Date();
+
+                    function limpiarCapasRuta() {
+                        if (rutaLayer) { map.removeLayer(rutaLayer); rutaLayer = null; }
+                        if (planLayer) { map.removeLayer(planLayer); planLayer = null; }
+                        detenerReproduccion();
+                        document.getElementById('playbackBar').style.display = 'none';
+                    }
+
+                    document.getElementById('btnVerRuta').onclick = function() {
+                        var empleadoId = document.getElementById('selectEmpleadoRuta').value;
+                        var fecha = document.getElementById('fechaRuta').value;
+                        if (!empleadoId || !fecha) return;
+
+                        jsonRpc('/field_sales/backend/location/route', {employee_id: parseInt(empleadoId, 10), date: fecha}).then(function(resultado) {
+                            limpiarCapasRuta();
+                            var resumenDiv = document.getElementById('resumenDia');
+
+                            if (!resultado || resultado.error) {
+                                resumenDiv.textContent = (resultado && resultado.error) || 'Error cargando la ruta';
+                                return;
+                            }
+                            if (!resultado.points.length) {
+                                resumenDiv.textContent = 'Sin registros de ubicación ese día.';
+                                return;
+                            }
+
+                            playbackPuntos = resultado.points;
+                            var puntos = resultado.points.map(function(p) { return [p.latitude, p.longitude]; });
+                            rutaLayer = L.polyline(puntos, {color: '#1976D2', weight: 4}).addTo(map);
+                            map.fitBounds(rutaLayer.getBounds());
+
+                            var s = resultado.summary;
+                            resumenDiv.innerHTML = '';
+                            var box = document.createElement('div');
+                            box.className = 'resumen-dia';
+                            box.innerHTML = ''; // se llena con nodos de texto abajo
+                            [
+                                s.km_recorridos + ' km recorridos',
+                                s.total_puntos + ' puntos registrados',
+                                s.visitas_del_dia + ' visita(s) ese día',
+                                'Horario: ' + formatearHora(s.primera_hora) + ' - ' + formatearHora(s.ultima_hora)
+                            ].forEach(function(txt) {
+                                var d = document.createElement('div');
+                                d.textContent = txt;
+                                box.appendChild(d);
+                            });
+                            resumenDiv.appendChild(box);
+                        });
+                    };
+
+                    document.getElementById('btnPlanVsReal').onclick = function() {
+                        var empleadoId = document.getElementById('selectEmpleadoRuta').value;
+                        var fecha = document.getElementById('fechaRuta').value;
+                        if (!empleadoId || !fecha) return;
+
+                        jsonRpc('/field_sales/backend/location/planned_stops', {employee_id: parseInt(empleadoId, 10), date: fecha}).then(function(resultado) {
+                            if (planLayer) { map.removeLayer(planLayer); planLayer = null; }
+                            if (!resultado || resultado.error || !resultado.stops.length) return;
+
+                            var grupo = L.layerGroup();
+                            resultado.stops.forEach(function(stop) {
+                                var color = stop.done ? '#4CAF50' : '#9E9E9E';
+                                L.marker([stop.latitude, stop.longitude], {
+                                    icon: L.divIcon({
+                                        className: '',
+                                        html: '<div style="background:' + color + ';color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;">' + stop.sequence + '</div>'
+                                    })
+                                }).bindPopup(stop.customer_name + (stop.done ? ' (visitado)' : ' (planificado)')).addTo(grupo);
+                            });
+                            planLayer = grupo.addTo(map);
+                        });
+                    };
+
+                    function detenerReproduccion() {
+                        if (playbackTimer) { clearInterval(playbackTimer); playbackTimer = null; }
+                        document.getElementById('btnPlayPause').textContent = '▶';
+                    }
+
+                    document.getElementById('btnReproducir').onclick = function() {
+                        if (!playbackPuntos.length) return;
+                        var bar = document.getElementById('playbackBar');
+                        bar.style.display = 'block';
+                        var slider = document.getElementById('playbackSlider');
+                        slider.max = playbackPuntos.length - 1;
+                        slider.value = 0;
+                        playbackIndex = 0;
+
+                        if (!playbackMarker) {
+                            playbackMarker = L.marker([playbackPuntos[0].latitude, playbackPuntos[0].longitude]).addTo(map);
+                        }
+                        actualizarPlayback(0);
+                    };
+
+                    function actualizarPlayback(i) {
+                        var p = playbackPuntos[i];
+                        if (!p) return;
+                        playbackMarker.setLatLng([p.latitude, p.longitude]);
+                        map.panTo([p.latitude, p.longitude]);
+                        document.getElementById('playbackHora').textContent = formatearHora(p.captured_at);
+                        document.getElementById('playbackSlider').value = i;
+                    }
+
+                    document.getElementById('playbackSlider').oninput = function(e) {
+                        detenerReproduccion();
+                        playbackIndex = parseInt(e.target.value, 10);
+                        actualizarPlayback(playbackIndex);
+                    };
+
+                    document.getElementById('btnPlayPause').onclick = function() {
+                        if (playbackTimer) {
+                            detenerReproduccion();
+                            return;
+                        }
+                        document.getElementById('btnPlayPause').textContent = '⏸';
+                        playbackTimer = setInterval(function() {
+                            playbackIndex++;
+                            if (playbackIndex >= playbackPuntos.length) {
+                                detenerReproduccion();
+                                playbackIndex = playbackPuntos.length - 1;
+                                return;
+                            }
+                            actualizarPlayback(playbackIndex);
+                        }, 400);
+                    };
+
+                    document.getElementById('btnExportarCsv').onclick = function() {
+                        var empleadoId = document.getElementById('selectEmpleadoRuta').value;
+                        var fecha = document.getElementById('fechaRuta').value;
+                        if (!empleadoId || !fecha) return;
+                        window.open('/field_sales/backend/location/export.csv?employee_id=' + empleadoId + '&date=' + fecha, '_blank');
+                    };
+
+                    document.getElementById('btnExportarKml').onclick = function() {
+                        var empleadoId = document.getElementById('selectEmpleadoRuta').value;
+                        var fecha = document.getElementById('fechaRuta').value;
+                        if (!empleadoId || !fecha) return;
+                        window.open('/field_sales/backend/location/export.kml?employee_id=' + empleadoId + '&date=' + fecha, '_blank');
+                    };
+
+                    document.getElementById('btnHeatmap').onclick = function() {
+                        if (heatLayer) {
+                            map.removeLayer(heatLayer);
+                            heatLayer = null;
+                            document.getElementById('btnHeatmap').textContent = 'Ver últimos 30 días';
+                            return;
+                        }
+                        jsonRpc('/field_sales/backend/location/heatmap', {days: 30}).then(function(resultado) {
+                            if (!resultado || resultado.error || !resultado.points.length) return;
+                            heatLayer = L.heatLayer(resultado.points, {radius: 20}).addTo(map);
+                            document.getElementById('btnHeatmap').textContent = 'Ocultar mapa de calor';
+                        });
+                    };
+
+                    document.getElementById('btnActualizar').onclick = function() {
+                        cargarPosiciones();
+                        cargarEventos();
+                    };
+
+                    cargarPosiciones();
+                    cargarEventos();
+                    cargarSelectEmpleados();
+                    setInterval(function() { cargarPosiciones(); cargarEventos(); }, 15000); // refresco automático cada 15s
+                ]]></script>
+            </body>
+        </html>
+    </template>
+
+</odoo>

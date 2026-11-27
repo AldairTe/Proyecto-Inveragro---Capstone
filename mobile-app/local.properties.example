@@ -1,0 +1,9 @@
+## Plantilla de configuración local del SDK de Android
+## Copia este archivo como 'local.properties' y ajusta la ruta a tu SDK local:
+##
+## En Windows:
+## sdk.dir=C\:\\Users\\TuUsuario\\AppData\\Local\\Android\\Sdk
+##
+## En Linux / macOS:
+## sdk.dir=/Users/TuUsuario/Library/Android/sdk
+## sdk.dir=/home/TuUsuario/Android/Sdk

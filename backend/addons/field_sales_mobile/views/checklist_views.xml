@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_field_sales_checklist_item_tree" model="ir.ui.view">
+        <field name="name">field.sales.checklist.item.tree</field>
+        <field name="model">field.sales.checklist.item</field>
+        <field name="arch" type="xml">
+            <tree string="Ítems de Checklist Agronómico" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_field_sales_checklist_item" model="ir.actions.act_window">
+        <field name="name">Checklist Agronómico</field>
+        <field name="res_model">field.sales.checklist.item</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no configuras el checklist agronómico.
+            </p>
+            <p>
+                Cada ítem que agregues aquí aparecerá como una pregunta de sí/no en la app
+                al registrar una visita, además del campo de descripción libre.
+            </p>
+        </field>
+    </record>
+
+</odoo>

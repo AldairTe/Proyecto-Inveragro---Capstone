@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_field_sales_location_config_form" model="ir.ui.view">
+        <field name="name">field.sales.location.config.form</field>
+        <field name="model">field.sales.location.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Ubicación en Vivo">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active_feature"/>
+                        <field name="ping_interval_seconds" attrs="{'invisible': [('active_feature', '=', False)]}"/>
+                        <field name="retention_days" attrs="{'invisible': [('active_feature', '=', False)]}"/>
+                        <field name="offline_threshold_minutes" attrs="{'invisible': [('active_feature', '=', False)]}"/>
+                        <field name="geofence_radius_meters" attrs="{'invisible': [('active_feature', '=', False)]}"/>
+                        <field name="low_battery_threshold" attrs="{'invisible': [('active_feature', '=', False)]}"/>
+                    </group>
+                    <p class="text-muted">
+                        Con esto activo, la app envía la ubicación del vendedor de forma periódica
+                        (incluso con la app en segundo plano) para poder verla en el mapa en vivo
+                        y reconstruir la ruta recorrida cada día. Infórmalo a tu equipo: es
+                        seguimiento de ubicación durante la jornada laboral.
+                    </p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_field_sales_location_config_tree" model="ir.ui.view">
+        <field name="name">field.sales.location.config.tree</field>
+        <field name="model">field.sales.location.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="active_feature"/>
+                <field name="ping_interval_seconds"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_field_sales_location_config" model="ir.actions.act_window">
+        <field name="name">Configuración de Ubicación en Vivo</field>
+        <field name="res_model">field.sales.location.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_field_sales_live_map" model="ir.actions.act_url">
+        <field name="name">Ubicación en Vivo</field>
+        <field name="url">/field_sales/live_map</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

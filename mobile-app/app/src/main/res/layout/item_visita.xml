@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp">
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="2dp"
+        android:src="@drawable/arrow_back_ios_24px"
+        android:rotation="180"
+        android:alpha="0.5" /> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvFechaVisita"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12 Oct 2025 - 10:30 AM"
+        android:textColor="#333333"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:fontFamily="@font/poppins"/>
+
+    <TextView
+        android:id="@+id/tvObservacionVisita"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Se conversó sobre los nuevos fertilizantes."
+        android:textColor="#757575"
+        android:textSize="13sp"
+        android:fontFamily="@font/poppins"
+        android:layout_marginTop="2dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>
+
+</LinearLayout>

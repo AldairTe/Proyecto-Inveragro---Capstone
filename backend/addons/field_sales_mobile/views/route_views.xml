@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_field_sales_route_stop_calendar" model="ir.ui.view">
+        <field name="name">field.sales.route.stop.calendar</field>
+        <field name="model">field.sales.route.stop</field>
+        <field name="arch" type="xml">
+            <calendar string="Planificación de Rutas" date_start="planned_date" color="employee_id" mode="month" quick_add="false">
+                <field name="employee_id"/>
+                <field name="customer_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_field_sales_route_stop_tree" model="ir.ui.view">
+        <field name="name">field.sales.route.stop.tree</field>
+        <field name="model">field.sales.route.stop</field>
+        <field name="arch" type="xml">
+            <tree string="Paradas de Ruta" editable="bottom" default_order="planned_date, sequence">
+                <field name="sequence" widget="handle"/>
+                <field name="planned_date"/>
+                <field name="employee_id"/>
+                <field name="customer_id"/>
+                <field name="notes"/>
+                <field name="done"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_field_sales_route_stop_search" model="ir.ui.view">
+        <field name="name">field.sales.route.stop.search</field>
+        <field name="model">field.sales.route.stop</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Ruta">
+                <field name="employee_id"/>
+                <field name="customer_id"/>
+                <filter string="Hoy" name="today" domain="[('planned_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Esta semana" name="this_week"
+                        domain="[('planned_date', '&gt;=', (context_today() - relativedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
+                                 ('planned_date', '&lt;=', (context_today() + relativedelta(days=6 - context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Vendedor" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'planned_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_field_sales_route_stop" model="ir.actions.act_window">
+        <field name="name">Planificación de Rutas</field>
+        <field name="res_model">field.sales.route.stop</field>
+        <field name="view_mode">calendar,tree</field>
+        <field name="search_view_id" ref="view_field_sales_route_stop_search"/>
+        <field name="context">{'search_default_this_week': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no planificas rutas.
+            </p>
+            <p>
+                Asigna aquí qué cliente debe visitar cada vendedor cada día. La app le mostrará
+                solo esos clientes ese día (si activas la función en Configuración de Rutas).
+            </p>
+        </field>
+    </record>
+
+    <record id="view_field_sales_route_config_form" model="ir.ui.view">
+        <field name="name">field.sales.route.config.form</field>
+        <field name="model">field.sales.route.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Rutas">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active_feature"/>
+                    </group>
+                    <p class="text-muted">
+                        Si no planificas ninguna parada para un vendedor en un día, la app le
+                        sigue mostrando todos sus clientes asignados (no se queda sin nada que hacer).
+                    </p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_field_sales_route_config_tree" model="ir.ui.view">
+        <field name="name">field.sales.route.config.tree</field>
+        <field name="model">field.sales.route.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="active_feature"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_field_sales_route_config" model="ir.actions.act_window">
+        <field name="name">Configuración de Rutas</field>
+        <field name="res_model">field.sales.route.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>
