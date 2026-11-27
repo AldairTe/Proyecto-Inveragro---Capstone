@@ -6,20 +6,6 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-10-4169E1?logo=postgresql&logoColor=white)](backend/)
 [![Architecture](https://img.shields.io/badge/Architecture-Offline--First%20%7C%20Room%20SQLite-blue)](docs/arquitectura.md)
 
-Proyecto de grado / Capstone de Ingeniería enfocado en la transformación digital y optimización de las operaciones de preventa técnica en campo para el sector agroindustrial. Integra una **aplicación móvil Android nativa (Offline-First)** con el sistema **ERP Odoo 13 en contenedores Docker**, permitiendo el registro de visitas, validación geodésica de predios rurales y emisión de pedidos en zonas con nula o intermitente conectividad celular.
-
----
-
-## 📌 Problemática y Contexto Operativo
-En el sector agrícola peruano (valles de Ica, Chincha y Cañete), los ingenieros agrónomos y representantes comerciales visitan fundos ubicados en zonas con cobertura de red inestable o inexistente. Las soluciones convencionales dependientes de conexión constante fallan en el registro de pedidos y no permiten verificar la presencia física del vendedor en el fundo asignado.
-
-**Inveragro Vendedores** resuelve esta brecha mediante:
-1. **Persistencia Local y Resiliencia (Offline-First):** Catálogo de fertilizantes, semillas y clientes almacenados localmente en SQLite mediante Android Room.
-2. **Validación de Geocerca (Haversine):** Comprobación geodésica rigurosa que impide el inicio de la visita si el dispositivo está fuera del radio permitido (tolerancia menor a 1 metro).
-3. **Telemetría y Sincronización Automática:** Encolamiento seguro de transacciones (`external_uuid`) y sincronización atómica idempotente cuando se recupera conectividad.
-4. **Supervisión Satelital en Tiempo Real:** Módulo web para supervisores en Odoo con mapa interactivo y tracking de telemetría de vendedores en campo.
-
----
 
 ## 🏛️ Arquitectura General
 
@@ -128,6 +114,5 @@ Este repositorio fue auditado y preparado conforme a las buenas prácticas de se
 
 ---
 
-## 👨‍💻 Autores y Agradecimientos
-* **Aldair Te** - Desarrollo e Integración Capstone
-* Proyecto desarrollado para fines académicos y de titulación profesional en Ingeniería.
+## 👨‍💻 Autores
+* **Aldair TeLLO** - Desarrollo e Integración
