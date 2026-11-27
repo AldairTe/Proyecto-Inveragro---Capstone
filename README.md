@@ -1,4 +1,4 @@
-# Proyecto Inveragro - Sistema de Preventa Agrícola, Geocercas y Telemetría en Campo
+# APLICACIÓN MÓVIL DE GEOLOCALIZACIÓN EN TIEMPO REAL INTEGRADA A UN ERP PARA LA TRAZABILIDAD DE LA FUERZA DE VENTAS
 
 [![Android](https://img.shields.io/badge/Android-Native%20Java-3DDC84?logo=android&logoColor=white)](mobile-app/)
 [![Odoo](https://img.shields.io/badge/Odoo-13.0%20Community-714B67?logo=odoo&logoColor=white)](backend/)
